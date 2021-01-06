@@ -38,10 +38,89 @@ class Preprocessing :
     '''
     Préprocessing des données
     '''
-    def __init__(self, X):
+    DEFAULT_TASKS = ["lowercase", "noise_removal", "normalization", "stopword_removal", "lemmatization"]
+    MODELS = ["bow", "tf-idf"]
+
+    def __init__(self, X, tasks=DEFAULT_TASKS, model="bow"):
         '''
         Initialise la préprocessing
         :param X: Tweets à préprocessing
         '''
+
+        self.X = X
+        ########## TASKS ##############
+        ###############################
+        # MUST
+        ########################
+        # Lowercase :
+        if "lowercase" in tasks:
+            self.lowercase()
+        # Noise Removal :
+        if "noise_removal" in tasks:
+            self.noise_removal()
+        #########################
+
+        # SHOULD
+        #########################
+        # Normalization
+        if "normalization" in tasks:
+            self.normalization()
+        #########################
+
+        # DEPEND
+        #########################
+        # Stop-word Removal
+        if "stopword_removal" in tasks:
+            self.stopword_removal()
+        # Lemmatization
+        if "lemmatization" in tasks:
+            self.lemmatization()
+        #########################
+        ########## MODEL ##############
+        ###############################
+        if model == "bow":
+            pass
+        elif model == "tf-idf":
+            pass
+
+    def lowercase(self):
+        '''
+        Rendre les tweets en miniscule
+        '''
+        # TODO
         pass
-        
+
+    def noise_removal(self):
+        '''
+        Enlever les caractères spéciaux collés à un token
+        '''
+        # TODO
+        pass
+
+    def normalization(self):
+        '''
+        Normaliser les textes (":)" -> "smiley")
+        '''
+        # TODO
+        pass
+
+    def stopword_removal(self):
+        '''
+        Supprimer les stop-words
+        '''
+        # TODO
+        pass
+
+    def lemmatization(self):
+        '''
+        Mettre les mots en forme initative
+        '''
+        # TODO
+        pass
+
+    def get(self):
+        '''
+        Renvoie les données traitées
+        :return: X
+        '''
+        return self.X
