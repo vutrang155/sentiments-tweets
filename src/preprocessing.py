@@ -1,5 +1,6 @@
 import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer
+import re
+from utils import string_utils
 
 # ReadTweet
 class ReadTweet :
@@ -41,60 +42,72 @@ class Preprocessing :
     DEFAULT_TASKS = ["lowercase", "noise_removal", "normalization", "stopword_removal", "lemmatization"]
     MODELS = ["bow", "tf-idf"]
 
-    def __init__(self, X, tasks=DEFAULT_TASKS, model="bow"):
+    def __init__(self, X, tasks=DEFAULT_TASKS, model="bow", keep_hashtags=False, keep_mentiontags=False):
+        # TODO : making model param an object !
         '''
         Initialise la préprocessing
         :param X: Tweets à préprocessing
         '''
 
         self.X = X
+
+        self.keep_hashtags = False
+        self.keep_mentiontags = False
+        if keep_hashtags == True:
+            self.keep_hashtags = True
+        if keep_mentiontags == True:
+            self.keep_mentiontags = True
         ########## TASKS ##############
         ###############################
         # MUST
         ########################
-        # Lowercase :
         if "lowercase" in tasks:
             self.lowercase()
-        # Noise Removal :
         if "noise_removal" in tasks:
             self.noise_removal()
         #########################
 
         # SHOULD
         #########################
-        # Normalization
         if "normalization" in tasks:
             self.normalization()
         #########################
 
         # DEPEND
         #########################
-        # Stop-word Removal
         if "stopword_removal" in tasks:
             self.stopword_removal()
-        # Lemmatization
         if "lemmatization" in tasks:
             self.lemmatization()
         #########################
+
+
         ########## MODEL ##############
         ###############################
         if model == "bow":
+            # TODO
             pass
         elif model == "tf-idf":
+            # TODO
             pass
+
 
     def lowercase(self):
         '''
         Rendre les tweets en miniscule
         '''
-        # TODO
-        pass
+        self.X = np.char.lower(self.X)
 
     def noise_removal(self):
         '''
-        Enlever les caractères spéciaux collés à un token
+        Enlever les caractères spéciaux collés à un token .I.E. ":)hello" => ":) hello"
         '''
-        # TODO
+        for i in range(self.X.shape[0]):
+            self.X[i] = string_utils.decontract(self.X[i])
+        # TODO: ":)hello" to ":) hello"
+        #   N'oublie pas keep_hashtags, keep_mention_tags.
+        #   Si keep_hashtags = False => :)#Hello = :) # Hello
+        #   Si non                   => :)#Hello = :) #Hello
         pass
 
     def normalization(self):
