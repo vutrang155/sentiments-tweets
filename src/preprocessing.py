@@ -42,7 +42,7 @@ class Preprocessing :
     DEFAULT_TASKS = ["lowercase", "noise_removal", "normalization", "stopword_removal", "lemmatization"]
     MODELS = ["bow", "tf-idf"]
 
-    def __init__(self, X, tasks=DEFAULT_TASKS, model="bow", keep_hashtags=False, keep_mentiontags=False):
+    def __init__(self, X, tasks=DEFAULT_TASKS, model="bow", keep_tags=False):
         # TODO : making model param an object !
         '''
         Initialise la préprocessing
@@ -51,12 +51,7 @@ class Preprocessing :
 
         self.X = X
 
-        self.keep_hashtags = False
-        self.keep_mentiontags = False
-        if keep_hashtags == True:
-            self.keep_hashtags = True
-        if keep_mentiontags == True:
-            self.keep_mentiontags = True
+        self.keep_tags = keep_tags
         ########## TASKS ##############
         ###############################
         # MUST
@@ -104,10 +99,15 @@ class Preprocessing :
         '''
         for i in range(self.X.shape[0]):
             self.X[i] = string_utils.decontract(self.X[i])
-        # TODO: ":)hello" to ":) hello"
-        #   N'oublie pas keep_hashtags, keep_mention_tags.
-        #   Si keep_hashtags = False => :)#Hello = :) # Hello
-        #   Si non                   => :)#Hello = :) #Hello
+
+            # TODO: ":)hello" to ":) hello"
+            #   N'oublie pas keep_hashtags, keep_mention_tags.
+            #   Si keep_hashtags = False => :)#Hello = :) # Hello
+            #   Si non                   => :)#Hello = :) #Hello
+            if self.keep_tags == True:
+                #l = re.findall(r"[A-Za-z@#]+|\S", self.X[i])
+                pass
+
         pass
 
     def normalization(self):
