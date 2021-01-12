@@ -44,7 +44,6 @@ class PreprocessingText (BaseEstimator, TransformerMixin):
     Préprocessing des données
     """
     DEFAULT_TASKS = ["lowercase", "noise_removal", "normalization", "stopword_removal", "lemmatization"]
-    MODELS = ["bow", "tf-idf"]
 
     def __init__(self, tasks=DEFAULT_TASKS, keep_tags=True):
         '''

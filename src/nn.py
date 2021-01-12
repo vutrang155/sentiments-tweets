@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as data
 from sklearn.metrics import f1_score
+
 class Model(torch.nn.Module):
     def __init__(self, in_dim, out_dim):
         '''
@@ -17,15 +18,17 @@ class Model(torch.nn.Module):
 
         out_dim1 = int(in_dim//1.5)
         out_dim2 = int(out_dim1//1.5)
-        self.ln1 = nn.Linear(in_dim, out_dim1, bias=True)
-        self.ln2 = nn.Linear(out_dim1, out_dim2, bias=True)
-        self.ln3 = nn.Linear(out_dim2, out_dim, bias=True)
+        #self.ln1 = nn.Linear(in_dim, out_dim1, bias=True)
+        #self.ln2 = nn.Linear(out_dim1, out_dim2, bias=True)
+        #self.ln3 = nn.Linear(out_dim2, out_dim, bias=True)
+        self.ln = nn.Linear(in_dim, out_dim, bias=True)
         self.out = nn.LogSoftmax(dim=-1)
 
     def forward(self, X):
-        X = self.ln1(X)
-        X = F.relu(self.ln2(X))
-        X = self.out(self.ln3(X))
+        # X = self.ln1(X)
+        # X = F.relu(self.ln2(X))
+        # X = self.out(self.ln3(X))
+        X = self.out(self.ln(X))
         return X
 
 
