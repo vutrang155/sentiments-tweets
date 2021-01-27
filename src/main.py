@@ -24,12 +24,16 @@ X_train, X_valid, y_train, y_valid = train_test_split(X, y, shuffle=True, test_s
 #   2. normalization
 #   3. stopword_removal, lemmatization
 tasks = PreprocessingText.DEFAULT_TASKS # lowercase, noise_removal, normalization, stopword_removal, lemmatization
+tasks = ['lowercase', 'noise_removal', 'normalization', 'lemmatization']
 preprocessing_pipeline = Pipeline([
     ('preprocesing_text', PreprocessingText(tasks=tasks, keep_tags=False)),
     ('vect', CountVectorizer(ngram_range=(1,1))),
     # ('tfidf', TfidfTransformer())
     # Pq tfidf reduire l'efficacite : https://stackoverflow.com/questions/39152229/in-general-when-does-tf-idf-reduce-accuracy:w
 ])
+
+# Il va sauvegarde tous les tokens du X_train
+# Quand on transforme X_valid, tous les tokens qui ne sont pas reconnus dans X_train vont etre disparus
 preprocessing_pipeline.fit(X_train)
 X_train = preprocessing_pipeline.transform(X_train).toarray()
 X_valid = preprocessing_pipeline.transform(X_valid).toarray()

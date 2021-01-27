@@ -144,7 +144,6 @@ class PreprocessingText (BaseEstimator, TransformerMixin):
         for i in range(X.shape[0]):
             X[i] = string_utils.decontract(X[i])
 
-            # TODO: ":)hello" to ":) hello"
             #   N'oublie pas keep_hashtags, keep_mention_tags.
             #   Si keep_hashtags = False => :)#Hello = :) # Hello
             #   Si non                   => :)#Hello = :) #Hello
@@ -182,7 +181,10 @@ class PreprocessingText (BaseEstimator, TransformerMixin):
         :param X: ndarray (n, )
         :return: ndarray (n,) : tweets ou les stopwords sont supprimer
         '''
-        # TODO
+        for i, x in enumerate(X):
+            s = x.split()
+            s = [c for c in s if c not in stopwords.words('english')]
+            X[i] = ' '.join(s)
         return X
 
     def lemmatization(self, X):
