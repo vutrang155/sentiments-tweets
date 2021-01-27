@@ -6,29 +6,27 @@ import torch.nn.functional as F
 import torch.utils.data as data
 from sklearn.metrics import f1_score
 
-class Model(torch.nn.Module):
-    def __init__(self, in_dim, out_dim):
+class TwoLayersModel(torch.nn.Module):
+    def __init__(self, in_dim, h_dim, out_dim):
         '''
 
         Initialiser le modèle nn
         :param in_dim:
         :param out_dim:
         '''
-        super(Model, self).__init__()
+        super(TwoLayersModel, self).__init__()
 
-        out_dim1 = int(in_dim//1.5)
-        out_dim2 = int(out_dim1//1.5)
-        #self.ln1 = nn.Linear(in_dim, out_dim1, bias=True)
-        #self.ln2 = nn.Linear(out_dim1, out_dim2, bias=True)
-        #self.ln3 = nn.Linear(out_dim2, out_dim, bias=True)
-        self.ln = nn.Linear(in_dim, out_dim, bias=True)
+        self.ln1 = nn.Linear(in_dim, h_dim, bias=True)
+        self.ln2 = nn.Linear(h_dim, out_dim, bias=True)
+        self.ln2_drop = nn.Dropout(p=0.5)
         self.out = nn.LogSoftmax(dim=-1)
 
     def forward(self, X):
-        # X = self.ln1(X)
-        # X = F.relu(self.ln2(X))
-        # X = self.out(self.ln3(X))
-        X = self.out(self.ln(X))
+        # Suffered from Dying RELU....
+        X = F.relu(self.ln1(X))
+        X = F.relu(self.ln2(X))
+        X = F.relu(self.ln2_drop(X))
+        X = self.out((X))
         return X
 
 
@@ -39,12 +37,14 @@ def collate(batch):
     transposed_data = list(zip(*batch))
     return torch.stack(transposed_data[0], 0), torch.stack(transposed_data[1], 0)
 
-def train(train_X, train_Y, valid_X, valid_Y, epochs=100, batch_size=64, lr= 1e-3):
+def train(train_X, train_Y, valid_X, valid_Y, epochs=100, batch_size=64, lr= 1e-1):
 
-    model = Model(train_X.shape[1], 4)
+    model = TwoLayersModel(train_X.shape[1], int(train_X.shape[1] // 2), 4)
 
+    #opti = torch.optim.SGD(model.parameters(), lr=lr)
     opti = torch.optim.SGD(model.parameters(), lr=lr)
     criterion = nn.NLLLoss()
+    # criterion = nn.CrossEntropyLoss()
 
     # Transformer ndarray en torch.tensor
     t_train_X = torch.tensor(train_X, dtype=torch.float)
@@ -69,12 +69,13 @@ def train(train_X, train_Y, valid_X, valid_Y, epochs=100, batch_size=64, lr= 1e-
         model.train()
 
         for batch_ndx, (trn_x, trn_y) in enumerate(train_loader):
-            opti.zero_grad()
             y_pred = model(trn_x)
             loss = criterion(y_pred, trn_y)
+            losses.append(loss)
+
+            opti.zero_grad()
             loss.backward()
             opti.step()
-            losses.append(loss)
 
         model.eval()
         for batch_ndx, (vld_x, vld_y) in enumerate(valid_loader):

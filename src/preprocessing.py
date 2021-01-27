@@ -1,10 +1,21 @@
 import numpy as np
+import pandas as pd
 import re
 
 from utils import string_utils
 import constants
 
 from sklearn.base import BaseEstimator, TransformerMixin
+
+import nltk
+from nltk.corpus import stopwords
+from collections import Counter
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+# nltk.download("stopwords")
+# nltk.download("punkt")
+# nltk.download("averaged_perceptron_tagger")
+# nltk.download('wordnet')
 
 # ReadTweet
 class ReadTweet :
@@ -45,7 +56,7 @@ class PreprocessingText (BaseEstimator, TransformerMixin):
     """
     DEFAULT_TASKS = ["lowercase", "noise_removal", "normalization", "stopword_removal", "lemmatization"]
 
-    def __init__(self, tasks=DEFAULT_TASKS, keep_tags=True):
+    def __init__(self, tasks=DEFAULT_TASKS, keep_tags=True, tokens_lowerbound=10):
         '''
         Initialiser la préprocessing
         :param tasks: list, Les tachês à passer. Par défaults, elles sont définies dans le variable constant DEFAULT_TASKS
@@ -53,8 +64,17 @@ class PreprocessingText (BaseEstimator, TransformerMixin):
         '''
         self.keep_tags = keep_tags
         self.tasks = tasks
+        self.tokens = pd.Series()
+        self.tokens_lowerbound = tokens_lowerbound
+        self.is_fit = False
 
     def fit(self, X, y=None, **fit_params):
+        X_transformed = self.transform(X)
+        # Tokenisation :
+        self.tokens = pd.Series(''.join(X_transformed).split()).value_counts()
+        # Prendre seulemenet les tokens dont la frequnce > 10
+        self.tokens = self.tokens[self.tokens > self.tokens_lowerbound]
+        self.is_fit = True
         return self
 
     def transform(self, X, **transform_params):
@@ -80,6 +100,20 @@ class PreprocessingText (BaseEstimator, TransformerMixin):
         if "lemmatization" in self.tasks:
             X = self.lemmatization(X)
         #########################
+
+        # If fit is called
+        if self.is_fit == True: 
+            X = np.array(
+                pd.Series(X).apply(
+                lambda x: 
+                    " ".join(
+                        x for x in x.split() 
+                            if x in list(self.tokens.index)
+                    )
+                )
+            )
+            print(X)
+
         return X
 
     def lowercase(self, X):
@@ -137,7 +171,7 @@ class PreprocessingText (BaseEstimator, TransformerMixin):
                         new_substr = new_substr + element
 
                 # Replace w by new_str
-                new_str = new_str+new_substr
+                new_str = new_str + new_substr
             X[i] = new_str
         return X
 
@@ -157,5 +191,21 @@ class PreprocessingText (BaseEstimator, TransformerMixin):
         :param X: ndarray (n, )
         :return: ndarray (n,) : tweets en forme infinitive
         '''
-        # TODO
+        def lemmatize_sentence(sentence):
+            wnl = WordNetLemmatizer()
+            sentence_words = sentence.split(' ')
+            new_sentence_words = list()
+            
+            for sentence_word in sentence_words:
+                sentence_word = sentence_word.replace('#', '')
+                new_sentence_word = wnl.lemmatize(sentence_word.lower(), wordnet.VERB)
+                new_sentence_words.append(new_sentence_word)
+                
+            new_sentence = ' '.join(new_sentence_words)
+            new_sentence = new_sentence.strip()
+
+            return new_sentence
+
+        X = np.vectorize(lemmatize_sentence)(X)
+
         return X
